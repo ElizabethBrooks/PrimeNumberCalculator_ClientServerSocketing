@@ -19,8 +19,10 @@ int main(int argc, char *argv[]){
     int sfd=0, num=0, numDiv=0, defaultCheck=0, timeout=5; //Initialize variables for socket conection
     struct sockaddr_in servAdd; //Struct for socket
     const char equalsDel[2]="="; //Set delimiter for string tokenization
-    char rBuffer[1044], *token=" ", line[144]; //Input buffer char array
+    char rBuffer[1044]; //Input buffer char array
     FILE *userFile=0; //Initialize input file object
+    size_t lineSize = 144; //Initialize line buffer size
+    char *line = malloc(lineSize * sizeof(char));
     memset(rBuffer, '0', sizeof(rBuffer)); //Initialize input buffer
     memset(&servAdd, '0', sizeof(servAdd)); //Initialize socket struct
     if(argc > 2){ //Verify input parameters
@@ -29,17 +31,17 @@ int main(int argc, char *argv[]){
     } //End if
     userFile=fopen(argv[1], "rt"); //Open input file from command line
     if(userFile){ //Verify the file exists
-        if(fgets(line, sizeof(line), userFile)){ //Retrieve first line with ip
+        if(getline(&line, &lineSize, userFile)){ //Retrieve first line with ip
             servAdd.sin_addr.s_addr=inet_addr(line); //Set ip
         }else{ //File error
             defaultCheck=1;
         } //End if, else
-        if(fgets(line, sizeof(line), userFile)){ //Retrieve second line with port
+        if(getline(&line, &lineSize, userFile)){ //Retrieve second line with port
             servAdd.sin_port=htons(atoi(line)); //Set port
         }else{ //File error
             defaultCheck=1;
         } //End if, else
-        if(fgets(line, sizeof(line), userFile)){ //Retrieve third line with timeout
+        if(getline(&line, &lineSize, userFile)){ //Retrieve third line with timeout
             timeout=atoi(line); //Convert string token to int and set timeout
         }else{ //File error
             defaultCheck=1;

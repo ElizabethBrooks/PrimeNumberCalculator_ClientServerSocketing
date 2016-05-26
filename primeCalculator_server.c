@@ -14,7 +14,8 @@ Date modified: May 26, 2016
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <limits.h>
-#include <pthread.h> 
+#include <pthread.h>
+#include <math.h>
 int randomNum, divisor=2; //Initialize global varibles for determing if random number is prime
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER; //Allow for mutual exclusion to handle critical sections
 //Method for sending random numbers to clients using threads

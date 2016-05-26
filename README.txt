@@ -15,6 +15,6 @@ Each client should receive equal number of divisions to perform."
 
 ##To compile: (Using library linkers and input file path)
 $ gcc -o testServer primeCalculator_server.c -lpthread -lm
+$ gcc -o testClient primeCalculator_client.c
 $ ./testServer
-$ gcc -o testClient primeCalculator_client.c ini.txt
-$ ./testClient
+$ ./testClient ini.txt

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
     lfd=socket(AF_INET, SOCK_STREAM, 0); //Create a new unnamed socket and store its file descriptor
     memset(&servAdd, '0', sizeof(servAdd)); //Initialize socket struct
     servAdd.sin_addr.s_addr=inet_addr("192.168.1.100"); //Set interface for server to listen on
-    servAdd.sin_port=htons(4444); //Set port to wait for client response on
+    servAdd.sin_port=htons(4488); //Set port to wait for client response on
     servAdd.sin_family=AF_INET; //Set family/domain
     bind(lfd, (struct sockaddr*)&servAdd, sizeof(servAdd)); //Bind the socket details to the created server struct, servers must bind with specific port
     listen(lfd, 5); //Set max number of client connections for server, 5 is recommended max for most systems

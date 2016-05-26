@@ -19,12 +19,12 @@ int main(int argc, char *argv[]){
     int sfd=0, num=0, numDiv=0, timeout=5; //Initialize variables for socket conection
     struct sockaddr_in servAdd; //Struct for socket
     const char equalsDel[2]="="; //Set delimiter for string tokenization
-    char rBuffer[1044], fileString[144], *token="ini", line[144]; //Input buffer char array
+    char rBuffer[1044], *token=" ", line[144]; //Input buffer char array
     FILE *userFile=0; //Initialize input file object
     memset(rBuffer, '0', sizeof(rBuffer)); //Initialize input buffer
     memset(&servAdd, '0', sizeof(servAdd)); //Initialize socket struct
-    if(argc != 2){ //Verify input parameters
-        printf("\nUsage: %s filename\n",argv[0]); //Print filename
+    if(argc > 2){ //Verify input parameters
+        printf("\nError: %s file usage\n",argv[0]); //Print filename
         return 1; //Exit program return
     } //End if
     userFile=fopen(argv[1], "rt"); //Open input file from command line
@@ -50,16 +50,17 @@ int main(int argc, char *argv[]){
         } //End outter while
     }else{ //Return error if file does not exist
         printf("File not found... using default ip, port, and timeout values.\n"); //Print error message
-        servAdd.sin_port=htons(4444); //Set default port
+        servAdd.sin_port=htons(4488); //Set default port
         servAdd.sin_addr.s_addr=inet_addr("192.168.1.100"); //Set default ip
     }//End if, else
     fclose(userFile); //Close input file 
-    servAdd.sin_family=AF_INET; //Set socket family/domain   
+    servAdd.sin_family=AF_INET; //Set socket family/domain  
     if((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){ //Create and verift socket connection to server
         printf("\nError: socket creation failure\n"); //Print error message if failed
         return -1; //Exit program with error
     } //End if
     while(timeout>0){ //Attempt to connect to server for the amount of time specified
+        //printf("connect");
         if(connect(sfd, (struct sockaddr *)&servAdd, sizeof(servAdd)) < 0){ //Attempt connection between client and server sockets
            timeout--; //Decrement connection timer
         }//End if

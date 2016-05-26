@@ -20,28 +20,23 @@ int randomNum, divisor=2; //Initialize global varibles for determing if random n
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER; //Allow for mutual exclusion to handle critical sections
 //Method for sending random numbers to clients using threads
 void *send_random(void *lfdInput){
-    pthread_mutex_lock(&count_mutex);//Mutually exclude multiple threads
-    int parameter;
-    memcpy(&parameter,(int *)lfdInput,sizeof(int));
+    int parameter; //Initialize parameter for lfd input
+    memcpy(&parameter,(int *)lfdInput,sizeof(int)); //Store input lfd in parameter
     int cfd=0; //Initialize variable for sending numbers to clients
     char sBuffer[1044]; //Output buffer char array
     memset(sBuffer, '0', sizeof(sBuffer)); //Initialize output buffer
-    if(divisor==sqrt(randomNum)){ //Check divisors up to sqrt of the random number
-       printf("%d is a prime number!\n", randomNum); //Print that the number is not prime
-       return 0; //Exit program return
-    }else{ //Continue calculations
-        while(1){ //Wait for client responses
-            cfd=accept(parameter, (struct sockaddr*)NULL, NULL); //Once client is ready, retrieve the client socket file descriptor
-            snprintf(sBuffer, sizeof(sBuffer), "%d", randomNum); //Send random number to output buffer
-            write(cfd, sBuffer, strlen(sBuffer)); //Use client descriptor to write back to client the random number
-            snprintf(sBuffer, sizeof(sBuffer), "%d", divisor); //Send random number to output buffer
-            write(cfd, sBuffer, strlen(sBuffer)); //Use client descriptor to write back to client the divisor
-            close(cfd); //Close the current client socket using its file descriptor
-            sleep(1); //Pause client process
-        } //End while
-    } //End if, else
-    divisor++; //Increment the divisor
-    pthread_mutex_unlock(&count_mutex);//Unlock mutually excluded threads
+    while(divisor!=sqrt(randomNum)){ //Wait for client responses
+        cfd=accept(parameter, (struct sockaddr*)NULL, NULL); //Once client is ready, retrieve the client socket file descriptor
+        snprintf(sBuffer, sizeof(sBuffer), "%d", randomNum); //Send random number to output buffer
+        write(cfd, sBuffer, strlen(sBuffer)); //Use client descriptor to write back to client the random number
+        snprintf(sBuffer, sizeof(sBuffer), "%d", divisor); //Send random number to output buffer
+        write(cfd, sBuffer, strlen(sBuffer)); //Use client descriptor to write back to client the divisor
+        pthread_mutex_lock(&count_mutex);//Mutually exclude multiple threads from divisor global counter
+        divisor++; //Increment the divisor global counter
+        pthread_mutex_unlock(&count_mutex);//Unlock mutually excluded threads from divisor global counter
+    } //End while
+    close(cfd); //Close the current client socket using its file descriptor
+    sleep(1); //Pause client process
 } //End send_random
 //The main method for a server application to send large prime numbers to a client application through TCP/IP socketing
 int main(int argc, char *argv[]){
@@ -61,11 +56,11 @@ int main(int argc, char *argv[]){
         fflush(stdout); //Flush output buffer
         int Error = pthread_create(&threadPool[threadNum],NULL,send_random,(void *)&lfd); //Create threads for searching neighborhoods
         if (Error) { //Catch errors in creating threads
-            printf("Error creating threads... program exited."); //Print error message to the screen
+            printf("Error: creating threads... program exited."); //Print error message to the screen
             return -1; //Exit program with error
       } //End if
     } //End for
-    for(i=0; i < 5; i++){ //Join client threads
-        pthread_join(threadPool[i],(void **)0);
+    for(i=0; i < 5; i++){ //Loop through created client threads
+        pthread_join(threadPool[i],(void **)0);//Join client threads
     } //End for
 } //End main

@@ -16,7 +16,7 @@ Date Modified: May 26, 2016
 #include <errno.h>
 //The main method for a client application to send large prime numbers to a client application through TCP/IP socketing
 int main(int argc, char *argv[]){
-    int sfd=0, num=0, numDiv=0, timeout=5; //Initialize variables for socket conection
+    int sfd=0, num=0, numDiv=0, defaultCheck=0, timeout=5; //Initialize variables for socket conection
     struct sockaddr_in servAdd; //Struct for socket
     const char equalsDel[2]="="; //Set delimiter for string tokenization
     char rBuffer[1044], *token=" ", line[144]; //Input buffer char array
@@ -29,27 +29,28 @@ int main(int argc, char *argv[]){
     } //End if
     userFile=fopen(argv[1], "rt"); //Open input file from command line
     if(userFile){ //Verify the file exists
-        while(fgets(line, 144, userFile) != NULL){ //Parse input file by line, up to 144 characters
-            token=strtok(line, equalsDel); //Retrieve first token
-            while(token != NULL){ //Tokenize file string for input parameters
-                if(strcmp(token,"ip")){ //Check if ip
-                    token=strtok(NULL, equalsDel); //Retrieve next token
-                    servAdd.sin_addr.s_addr=inet_addr(token); //Set ip
-                }else if(strcmp(token,"port")){ //Check if port
-                    token=strtok(NULL, equalsDel); //Retrieve next token
-                    servAdd.sin_port=htons(atoi(token)); //Set port
-                }else if(strcmp(token,"timeout")){ //Check if timeout
-                    token=strtok(NULL, equalsDel); //Retrieve next token
-                    timeout=atoi(token); //Convert string token to int
-                }else{ //Invalid input file string token
-                    printf("\nError: invalid input file... using default ip, port, and timeout values.\n"); //Print error message
-                    servAdd.sin_port=htons(4444); //Set default port
-                    servAdd.sin_addr.s_addr=inet_addr("192.168.1.100"); //Set default ip
-                } //End if, else if
-            } //End inner while
-        } //End outter while
+        if(fgets(line, sizeof(line), userFile)){ //Retrieve first line with ip
+            servAdd.sin_addr.s_addr=inet_addr(line); //Set ip
+        }else{ //File error
+            defaultCheck=1;
+        } //End if, else
+        if(fgets(line, sizeof(line), userFile)){ //Retrieve second line with port
+            servAdd.sin_port=htons(atoi(line)); //Set port
+        }else{ //File error
+            defaultCheck=1;
+        } //End if, else
+        if(fgets(line, sizeof(line), userFile)){ //Retrieve third line with timeout
+            timeout=atoi(line); //Convert string token to int and set timeout
+        }else{ //File error
+            defaultCheck=1;
+        } //End if, else
+        if(defaultCheck==1){ //Check if file error occured
+            printf("\nError: File content invalid... using default ip, port, and timeout values.\n"); //Print error message
+            servAdd.sin_port=htons(4488); //Set default port
+            servAdd.sin_addr.s_addr=inet_addr("192.168.1.100"); //Set default ip
+        }
     }else{ //Return error if file does not exist
-        printf("File not found... using default ip, port, and timeout values.\n"); //Print error message
+        printf("\nError: File not found... using default ip, port, and timeout values.\n"); //Print error message
         servAdd.sin_port=htons(4488); //Set default port
         servAdd.sin_addr.s_addr=inet_addr("192.168.1.100"); //Set default ip
     }//End if, else
@@ -63,8 +64,9 @@ int main(int argc, char *argv[]){
         //printf("connect");
         if(connect(sfd, (struct sockaddr *)&servAdd, sizeof(servAdd)) < 0){ //Attempt connection between client and server sockets
            timeout--; //Decrement connection timer
+           sleep(1); //Wait for server
         }//End if
-        if(timeout<=0){
+        if(timeout<=0){ 
             printf("\nError: connection failure\n"); //Print error message if connection failed
             return -1; //Exit program, unable to connect in given time
         } //End if

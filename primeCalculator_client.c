@@ -15,19 +15,9 @@ Date Modified: May 26, 2016
 #include <unistd.h>
 #include <errno.h>
 #include <math.h>
-//Method for efficiently determining if an input number is prime
-int primeCalculator(int numInput){
-   int i; //Initialize counter
-   for(i=2; i < sqrt(numInput); i++){ //Check values until the sqrt of number
-      if(numInput%i == 0){ //Check if number is divisible by i
-         return 0; //Number is not prime
-      } //End if
-   } //End for
-   return 1; //Number is prime
-} //End primeCalculator
 //The main method for a client application to send large prime numbers to a client application through TCP/IP socketing
 int main(int argc, char *argv[]){
-    int sfd=0, num=0, timeout=0; //Initialize variables for socket conection
+    int sfd=0, num=0, numDiv=0, timeout=0; //Initialize variables for socket conection
     struct sockaddr_in servAdd; //Struct for socket
     const char equalsDel[2]="="; //Set delimiter for string tokenization
     char rBuffer[1044], fileString[144], *token="ini", line[144]; //Input buffer char array
@@ -75,19 +65,26 @@ int main(int argc, char *argv[]){
        printf("\nError: connection failure\n"); //Print error message if connection failed
        return -1; //Exit program with error
     } //End if
-    while((num=read(sfd, rBuffer, sizeof(rBuffer)-1)) > 0){ //Retrieve prime number sent through server/client socket connection
-        rBuffer[num]=0; //Clear output buffer
-        if(primeCalculator(num) == 1){ //Determine if input number is prime
-            printf("%d is a prime number!\n", num); //Print that the number is prime
-        }else{ //Input number is not prime
-            printf("%d is not a prime number!\n", num); //Print that the number is not prime
-        } //End if, else
-        if(fputs(rBuffer, stdout) == EOF){ //Display result of calcuation
-            printf("\nError : results display failure\n"); //Print error message for output buffer
-        } //End if
-    } //End while
+    if((num=read(sfd, rBuffer, sizeof(rBuffer)-1)) < 0){ //Retrieve prime number sent through server/client socket connection
+        printf("\nError : socket read failure\n"); //Print error message for read failure
+        return -1; //Exit program with error
+    } //End if
+    bzero(rBuffer, 1044); //Clear output buffer
+    if((numDiv=read(sfd, rBuffer, sizeof(rBuffer)-1) < 0){ //Retrieve divisor
+        printf("\nError : socket read failure\n"); //Print error message for read failure
+        return -1; //Exit program with error
+    } //End if
+    if(num%numDiv==0){ //Determine if input number is prime
+        printf("%d is not a prime number!\n", num); //Print that the number is not prime
+        return 0; //End program return
+    } //End if
+    if(fputs(rBuffer, stdout) == EOF){ //Check if buffer is empty
+        printf("\nError : results display failure\n"); //Print error message for output buffer
+        return -1; //Exit program with error
+    } //End if
     if(num < 0){ //Check number sent is valid
         printf("\nError: read failure\n"); //Print error message for invalid prime number
+        return -1; //Exit program with error
     } //End if
     return 0; //End of program return
 } //End main

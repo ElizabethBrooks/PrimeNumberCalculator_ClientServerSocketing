@@ -21,8 +21,8 @@ int main(int argc, char *argv[]){
     const char equalsDel[2]="="; //Set delimiter for string tokenization
     char rBuffer[1044]; //Input buffer char array
     FILE *userFile=0; //Initialize input file object
-    size_t lineSize = 144; //Initialize line buffer size
-    char *line = malloc(lineSize * sizeof(char));
+    size_t lineSize = 144; //Set file line buffer size
+    char *line = malloc(lineSize * sizeof(char)); //Allocate memory for line buffer
     memset(rBuffer, '0', sizeof(rBuffer)); //Initialize input buffer
     memset(&servAdd, '0', sizeof(servAdd)); //Initialize socket struct
     if(argc > 2){ //Verify input parameters

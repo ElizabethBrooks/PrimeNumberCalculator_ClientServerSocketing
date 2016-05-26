@@ -14,7 +14,6 @@ Date Modified: May 26, 2016
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
-#include <math.h>
 //The main method for a client application to send large prime numbers to a client application through TCP/IP socketing
 int main(int argc, char *argv[]){
     int sfd=0, num=0, numDiv=0, timeout=5; //Initialize variables for socket conection

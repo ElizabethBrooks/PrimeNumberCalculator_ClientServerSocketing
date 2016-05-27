@@ -38,7 +38,7 @@ void *send_random(void *lfdInput){
         checkPrime=recv(cfd, rBuffer, strlen(rBuffer), 0); //Recieve output from client
         if(checkPrime==1){ //Number is not prime
             printf("%d is not a prime number!", randomNum); //Print error message to the screen
-            return 0; //Exit method return
+            return 0; //End of program return
         } //End if
     } //End while
     close(cfd); //Close the current client socket using its file descriptor

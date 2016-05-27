@@ -20,11 +20,12 @@ int randomNum, divisor=2; //Initialize global varibles for determing if random n
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER; //Allow for mutual exclusion to handle critical sections
 //Method for sending random numbers to clients using threads
 void *send_random(void *lfdInput){
-    int parameter; //Initialize parameter for lfd input
+    int parameter, checkPrime=0; //Initialize parameter for lfd input
     memcpy(&parameter,(int *)lfdInput,sizeof(int)); //Store input lfd in parameter
     int cfd=0; //Initialize variable for sending numbers to clients
-    char sBuffer[1044]; //Output buffer char array
+    char sBuffer[1044], rBuffer[1044]; //Output buffer char array
     memset(sBuffer, '0', sizeof(sBuffer)); //Initialize output buffer
+    memset(rBuffer, '0', sizeof(rBuffer)); //Initialize output buffer
     while(divisor!=sqrt(randomNum)){ //Wait for client responses
         cfd=accept(parameter, (struct sockaddr*)NULL, NULL); //Once client is ready, retrieve the client socket file descriptor
         snprintf(sBuffer, sizeof(sBuffer), "%d", randomNum); //Send random number to output buffer
@@ -34,6 +35,11 @@ void *send_random(void *lfdInput){
         pthread_mutex_lock(&count_mutex);//Mutually exclude multiple threads from divisor global counter
         divisor++; //Increment the divisor global counter
         pthread_mutex_unlock(&count_mutex);//Unlock mutually excluded threads from divisor global counter
+        checkPrime=recv(cfd, rBuffer, strlen(rBuffer), 0); //Recieve output from client
+        if(checkPrime==1){ //Number is not prime
+            printf("%d is not a prime number!", randomNum); //Print error message to the screen
+            return 0; //Exit method return
+        } //End if
     } //End while
     close(cfd); //Close the current client socket using its file descriptor
     sleep(1); //Pause client process
@@ -63,4 +69,6 @@ int main(int argc, char *argv[]){
     for(i=0; i < 5; i++){ //Loop through created client threads
         pthread_join(threadPool[i],(void **)0);//Join client threads
     } //End for
+    printf("%d is a prime number!", randomNum); //Print error message to the screen
+    return 0; //End of program return
 } //End main

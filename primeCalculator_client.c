@@ -16,7 +16,7 @@ Date Modified: May 26, 2016
 #include <errno.h>
 //The main method for a client application to send large prime numbers to a client application through TCP/IP socketing
 int main(int argc, char *argv[]){
-    int sfd=0, num=0, numDiv=0, defaultCheck=0, timeout=5; //Initialize variables for socket conection
+    int sfd=0, num=0, numDiv=0, defaultCheck=0, checkPrime=0, timeout=5; //Initialize variables for socket conection
     struct sockaddr_in servAdd; //Struct for socket
     const char equalsDel[2]="="; //Set delimiter for string tokenization
     char rBuffer[1044]; //Input buffer char array
@@ -83,9 +83,18 @@ int main(int argc, char *argv[]){
         return -1; //Exit program with error
     } //End if
     if(num%numDiv==0){ //Determine if input number is prime
-        printf("%d is not a prime number!\n", num); //Print that the number is not prime
-        return 0; //End program return
-    } //End if
+        checkPrime=1; //Not prime
+        if(send(sfd, &checkPrime, sizeof(int), 0) < 0){ //Attempt to send to server check value
+            printf("Error: send failure"); //Print error message for send failure
+            return -1; //Exit program with error
+        } //End if
+    }else{
+        checkPrime=0; //Keep checking
+        if(send(sfd, &checkPrime, sizeof(int), 0) < 0){ //Attempt to send to server check value
+            printf("Error: send failure"); //Print error message for send failure
+            return -1; //Exit program with error
+        } //End if
+    } //End else, if
     if((fputs(rBuffer, stdout)) == EOF){ //Check if buffer is empty
         printf("\nError : results display failure\n"); //Print error message for output buffer
         return -1; //Exit program with error
